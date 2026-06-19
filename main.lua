@@ -133,7 +133,7 @@ local function DrawOutline(Hull, Size, Color, Opacity, Thickness)
         end
     end
     Convex.Static.HWMPoly = math.max(Convex.Static.HWMPoly, Size + 1)
-    DrawingImmediate.Polyline(Convex.Scratch.Poly, Color3.fromRGB(255, 255, 255), 0.5, 2)
+    DrawingImmediate.Polyline(Convex.Scratch.Poly, Color, 0.5, 2)
 end
 
 local function Render()
@@ -162,6 +162,43 @@ local function Render()
         Convex.Static.HWMHull = TruncateBuffer(Convex.Scratch.Hull, Size, Convex.Static.HWMHull)
         DrawPolygon(Convex.Scratch.Hull, Size, color, 0.3)
         DrawOutline(Convex.Scratch.Hull, Size, color, 1, 1)
+    end
+    for _, inst in ipairs(Ingame:GetChildren()) do
+        local color
+        if inst.Name ~= "Map" and inst:IsA("Model") then
+            if inst.Name == "BloxyCola" then
+                color = Color3.fromRGB(16, 167, 234)
+            elseif inst.Name == "Medkit" then
+                color = Color3.fromRGB(177, 45, 146)
+            else
+                color = Color3.fromRGB(228, 217, 211)
+            end
+        elseif inst.Name ~= "Map" and inst:IsA("BasePart") then
+            color = Color3.fromRGB(228, 217, 211)
+        else
+            continue
+        end
+        if inst:IsA("BasePart") then
+            local PointCount = 0
+            PointCount = ProjectPartCorners(inst, PointCount)
+            Convex.Static.HWMPoints = TruncateBuffer(Convex.Scratch.Points, PointCount, Convex.Static.HWMPoints)
+            local Size = CalculateConvexHull(Convex.Scratch.Points, PointCount, Convex.Scratch.Hull)
+            Convex.Static.HWMHull = TruncateBuffer(Convex.Scratch.Hull, Size, Convex.Static.HWMHull)
+            DrawPolygon(Convex.Scratch.Hull, Size, color, 0.3)
+            DrawOutline(Convex.Scratch.Hull, Size, color, 1, 1)
+        else
+            for _, Part in ipairs(inst:GetChildren()) do
+                if Part:IsA("BasePart") then
+                    local PointCount = 0
+                    PointCount = ProjectPartCorners(Part, PointCount)
+                    Convex.Static.HWMPoints = TruncateBuffer(Convex.Scratch.Points, PointCount, Convex.Static.HWMPoints)
+                    local Size = CalculateConvexHull(Convex.Scratch.Points, PointCount, Convex.Scratch.Hull)
+                    Convex.Static.HWMHull = TruncateBuffer(Convex.Scratch.Hull, Size, Convex.Static.HWMHull)
+                    DrawPolygon(Convex.Scratch.Hull, Size, color, 0.3)
+                    DrawOutline(Convex.Scratch.Hull, Size, color, 1, 1)
+                end
+            end
+        end
     end
 end
 
