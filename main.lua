@@ -172,9 +172,9 @@ local function Render()
                 color = Color3.fromRGB(177, 45, 146)
             elseif inst.Name == "1x1x1x1Zombie" or inst.Name == "shockwave" or inst.Name == "Shockwave" or inst.Name == "Swords" or inst.Name == "PizzaDeliveryRig" or inst.Name == "Bats" then
                 color = Color3.fromRGB(196, 45, 32)
-            elseif string.find(inst.Name, "Spray") or inst.Name == "PlacementRange" or inst.Name == "BuildermanSentryEffectRange" or inst.Name == "BuildermanDispenserEffectRange" or inst.Name == "Spike" or inst.Name == "007n7" then
+            elseif string.find(inst.Name, "Spray") or inst.Name == "PlacementRange" or inst.Name == "BuildermanSentryEffectRange" or inst.Name == "BuildermanDispenserEffectRange" or inst.Name == "Spike" then
                 continue
-            elseif string.find(inst.Name, "TaphTripwire") or string.find(inst.Name, "SubspaceTripmine") or inst.Name == "BuildermanDispenser" or inst.Name == "BuildermanSentry" then
+            elseif string.find(inst.Name, "TaphTripwire") or string.find(inst.Name, "SubspaceTripmine") or inst.Name == "BuildermanDispenser" or inst.Name == "BuildermanSentry" or inst.Name == "007n7" then
                 color = Color3.fromRGB(32, 196, 93)
             else
                 color = Color3.fromRGB(228, 217, 211)
