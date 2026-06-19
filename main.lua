@@ -170,7 +170,7 @@ local function Render()
                 color = Color3.fromRGB(16, 167, 234)
             elseif inst.Name == "Medkit" then
                 color = Color3.fromRGB(177, 45, 146)
-            elseif inst.Name == "1x1x1x1Zombie" or inst.Name == "shockwave" or inst.Name == "Shockwave" or inst.Name == "Swords" or inst.Name == "PizzaDeliveryRig" or inst.Name == "Bats" then
+            elseif inst.Name == "1x1x1x1Zombie" or inst.Name == "shockwave" or inst.Name == "Shockwave" or inst.Name == "Swords" or inst.Name == "PizzaDeliveryRig" then
                 color = Color3.fromRGB(196, 45, 32)
             elseif string.find(inst.Name, "Spray") or inst.Name == "PlacementRange" or inst.Name == "BuildermanSentryEffectRange" or inst.Name == "BuildermanDispenserEffectRange" or inst.Name == "Spike" then
                 continue
@@ -182,7 +182,7 @@ local function Render()
         elseif inst.Name ~= "Map" and inst:IsA("BasePart") then
             if inst.Name == "Pizza" or inst.Name == "GraffitiCL" then
                 color = Color3.fromRGB(32, 196, 93)
-            elseif string.find(inst.Name, "Puddle") or inst.Name == "SpikeCollision" or inst.Name == "HumanoidRootProjectile" or inst.Name == "Voidstar" then
+            elseif string.find(inst.Name, "Puddle") or inst.Name == "SpikeCollision" or inst.Name == "HumanoidRootProjectile" or inst.Name == "Voidstar" or inst.Name == "Bats" then
                 color = Color3.fromRGB(196, 45, 32)
             elseif string.find(inst.Name, "RespawnLocation") or inst.Name == "EndPoint" then
                 continue
