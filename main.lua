@@ -204,7 +204,7 @@ local function Render()
             DrawOutline(Convex.Scratch.Hull, Size, color, 1, 1)
         else
             for _, Part in ipairs(inst:GetChildren()) do
-                if Part:IsA("BasePart") and Part.Name ~= "CollisionHitbox" and Part.Name ~= "QueryHitbox" and Part.Name ~= "HaxxedBlade" and Part.Name ~= "HumanoidRootPart" and Part.Name ~= "CollisionGuard" then
+                if Part:IsA("BasePart") and Part.Name ~= "CollisionHitbox" and Part.Name ~= "QueryHitbox" and Part.Name ~= "HaxxedBlade" and Part.Name ~= "HumanoidRootPart" and Part.Name ~= "CollisionGuard" and Part.Name ~= "TheThing" and Part.Name ~= "ExpressionHolder" then
                     if inst.Name == "BuildermanSentry" and Part.Name == "Root" then continue end
                     local PointCount = 0
                     PointCount = ProjectPartCorners(Part, PointCount)
