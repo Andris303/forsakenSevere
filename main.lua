@@ -170,11 +170,27 @@ local function Render()
                 color = Color3.fromRGB(16, 167, 234)
             elseif inst.Name == "Medkit" then
                 color = Color3.fromRGB(177, 45, 146)
+            elseif inst.Name == "1x1x1x1Zombie" or inst.Name == "shockwave" or inst.Name == "Shockwave" or inst.Name == "Swords" or inst.Name == "PizzaDeliveryRig" or inst.Name == "Bats" then
+                color = Color3.fromRGB(196, 45, 32)
+            elseif string.find(inst.Name, "Spray") or inst.Name == "PlacementRange" or inst.Name == "BuildermanSentryEffectRange" or inst.Name == "BuildermanDispenserEffectRange" or inst.Name == "Spike" then
+                continue
+            elseif string.find(inst.Name, "TaphTripwire") or string.find(inst.Name, "SubspaceTripmine") or inst.Name == "BuildermanDispenser" or inst.Name == "BuildermanSentry" then
+                color = Color3.fromRGB(32, 196, 93)
             else
                 color = Color3.fromRGB(228, 217, 211)
             end
         elseif inst.Name ~= "Map" and inst:IsA("BasePart") then
-            color = Color3.fromRGB(228, 217, 211)
+            if inst.Name == "Pizza" or inst.Name == "GraffitiCL" then
+                color = Color3.fromRGB(32, 196, 93)
+            elseif string.find(inst.Name, "Puddle") or inst.Name == "SpikeCollision" or inst.Name == "HumanoidRootProjectile" or inst.Name == "Voidstar" then
+                color = Color3.fromRGB(196, 45, 32)
+            elseif string.find(inst.Name, "RespawnLocation") or inst.Name == "EndPoint" then
+                continue
+            else
+                color = Color3.fromRGB(228, 217, 211)
+            end
+        elseif string.find(inst.Name, "Shadows") or string.find(inst.Name, "JohnDoeTrail") then
+            color = Color3.fromRGB(196, 45, 32)
         else
             continue
         end
@@ -188,7 +204,8 @@ local function Render()
             DrawOutline(Convex.Scratch.Hull, Size, color, 1, 1)
         else
             for _, Part in ipairs(inst:GetChildren()) do
-                if Part:IsA("BasePart") then
+                if Part:IsA("BasePart") and Part.Name ~= "CollisionHitbox" and Part.Name ~= "QueryHitbox" and Part.Name ~= "HaxxedBlade" and Part.Name ~= "HumanoidRootPart" and Part.Name ~= "CollisionGuard" then
+                    if inst.Name == "BuildermanSentry" and Part.Name == "Root" then continue end
                     local PointCount = 0
                     PointCount = ProjectPartCorners(Part, PointCount)
                     Convex.Static.HWMPoints = TruncateBuffer(Convex.Scratch.Points, PointCount, Convex.Static.HWMPoints)
