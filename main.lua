@@ -144,6 +144,7 @@ local function Render()
     for _, inst in ipairs(Ingame.Map:GetChildren()) do
         local color
         if inst.Name == "Generator" then
+            if inst.Progress.Value == 100 then continue end
             inst = inst.Main
             color = Color3.fromRGB(234, 165, 16)
         elseif inst.Name == "BloxyCola" then
