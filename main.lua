@@ -170,7 +170,7 @@ local function Render()
                 color = Color3.fromRGB(16, 167, 234)
             elseif inst.Name == "Medkit" then
                 color = Color3.fromRGB(177, 45, 146)
-            elseif inst.Name == "1x1x1x1Zombie" or inst.Name == "shockwave" or inst.Name == "Shockwave" or inst.Name == "Swords" or inst.Name == "PizzaDeliveryRig" then
+            elseif inst.Name == "shockwave" or inst.Name == "Shockwave" or inst.Name == "Swords" or inst:FindFirstChild("HumanoidRootPart") then
                 color = Color3.fromRGB(196, 45, 32)
             elseif string.find(inst.Name, "Spray") or inst.Name == "PlacementRange" or inst.Name == "BuildermanSentryEffectRange" or inst.Name == "BuildermanDispenserEffectRange" or inst.Name == "Spike" then
                 continue
