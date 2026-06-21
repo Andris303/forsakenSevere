@@ -1,12 +1,26 @@
 --!strict
 --!optimize 2
 
-local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local Ingame = workspace.Map.Ingame
+local Killers = workspace.Players.Killers
+
+local KillerColor = Color3.fromRGB(196, 45, 32)
+local SurvivorColor = Color3.fromRGB(32, 196, 93)
+local BloxyColaColor = Color3.fromRGB(16, 167, 234)
+local MedkitColor = Color3.fromRGB(177, 45, 146)
+local MiscColor = Color3.fromRGB(228, 217, 211)
+local GeneratorColor = Color3.fromRGB(234, 165, 16)
+
+local ExactSkipESP = {"PlacementRange", "BuildermanSentryEffectRange", "BuildermanDispenserEffectRange", "Spike", "EndPoint", "Footstep", "CollisionHitbox", "QueryHitbox", "HaxxedBlade", "HumanoidRootPart", "CollisionGuard", "TheThing", "ExpressionHolder", "NoclipDetector", "BasicSlash", "SubspaceCenter", "Firebrand", "Beam", "Tentacle", "VoidstarCrown"}
+local PartialSkipESP = {"Spray", "RespawnLocation"}
+local ExactKillerESP = {"shockwave", "Shockwave", "Swords", "SpikeCollision", "HumanoidRootProjectile", "Voidstar", "Bats", "Shadow", "Noli"}
+local PartialKillerESP = {"JohnDoeTrail", "Shadows", "Puddle", "Shockwave"}
+local ExactSurvivorESP = {"BuildermanDispenser", "BuildermanSentry", "007n7", "Pizza", "GraffitiCL", "CrystalProjectile"}
+local PartialSurvivorESP = {"TaphTripwire", "SubspaceTripmine"}
 
 local Convex = {
     Scratch = {
@@ -136,86 +150,98 @@ local function DrawOutline(Hull, Size, Color, Opacity, Thickness)
     DrawingImmediate.Polyline(Convex.Scratch.Poly, Color, 0.5, 2)
 end
 
-local function Render()
-    if not Ingame:FindFirstChild("Map") then return end
-    if not LocalPlayer then return end
-    local Character = LocalPlayer.Character
-    local HumanoidRootPart = Character and Character:FindFirstChild("HumanoidRootPart")
-    for _, inst in ipairs(Ingame.Map:GetChildren()) do
-        local color
-        if inst.Name == "Generator" then
-            if inst.Progress.Value == 100 then continue end
-            inst = inst.Main
-            color = Color3.fromRGB(234, 165, 16)
-        elseif inst.Name == "BloxyCola" then
-            inst = inst.ItemRoot
-            color = Color3.fromRGB(16, 167, 234)
-        elseif inst.Name == "Medkit" then
-            inst = inst.ItemRoot
-            color = Color3.fromRGB(177, 45, 146)
-        else
-            continue
-        end
-        local PointCount = 0
-        PointCount = ProjectPartCorners(inst, PointCount)
-        Convex.Static.HWMPoints = TruncateBuffer(Convex.Scratch.Points, PointCount, Convex.Static.HWMPoints)
-        local Size = CalculateConvexHull(Convex.Scratch.Points, PointCount, Convex.Scratch.Hull)
-        Convex.Static.HWMHull = TruncateBuffer(Convex.Scratch.Hull, Size, Convex.Static.HWMHull)
-        DrawPolygon(Convex.Scratch.Hull, Size, color, 0.3)
-        DrawOutline(Convex.Scratch.Hull, Size, color, 1, 1)
-    end
-    for _, inst in ipairs(Ingame:GetChildren()) do
-        local color
-        if inst.Name ~= "Map" and inst:IsA("Model") then
-            if inst.Name == "BloxyCola" then
-                color = Color3.fromRGB(16, 167, 234)
-            elseif inst.Name == "Medkit" then
-                color = Color3.fromRGB(177, 45, 146)
-            elseif string.find(inst.Name, "Spray") or inst.Name == "PlacementRange" or inst.Name == "BuildermanSentryEffectRange" or inst.Name == "BuildermanDispenserEffectRange" or inst.Name == "Spike" then
-                continue
-            elseif string.find(inst.Name, "TaphTripwire") or string.find(inst.Name, "SubspaceTripmine") or inst.Name == "BuildermanDispenser" or inst.Name == "BuildermanSentry" or inst.Name == "007n7" then
-                color = Color3.fromRGB(32, 196, 93)
-            elseif inst.Name == "shockwave" or inst.Name == "Shockwave" or inst.Name == "Swords" or inst:FindFirstChild("HumanoidRootPart") then
-                color = Color3.fromRGB(196, 45, 32)
-            else
-                color = Color3.fromRGB(228, 217, 211)
-            end
-        elseif inst.Name ~= "Map" and inst:IsA("BasePart") then
-            if inst.Name == "Pizza" or inst.Name == "GraffitiCL" then
-                color = Color3.fromRGB(32, 196, 93)
-            elseif string.find(inst.Name, "Puddle") or inst.Name == "SpikeCollision" or inst.Name == "HumanoidRootProjectile" or inst.Name == "Voidstar" or inst.Name == "Bats" then
-                color = Color3.fromRGB(196, 45, 32)
-            elseif string.find(inst.Name, "RespawnLocation") or inst.Name == "EndPoint" then
-                continue
-            else
-                color = Color3.fromRGB(228, 217, 211)
-            end
-        elseif string.find(inst.Name, "Shadows") or string.find(inst.Name, "JohnDoeTrail") then
-            color = Color3.fromRGB(196, 45, 32)
-        else
-            continue
-        end
+local function Highlight(inst, color)
+    local PointCount = 0
+    PointCount = ProjectPartCorners(inst, PointCount)
+    Convex.Static.HWMPoints = TruncateBuffer(Convex.Scratch.Points, PointCount, Convex.Static.HWMPoints)
+    local Size = CalculateConvexHull(Convex.Scratch.Points, PointCount, Convex.Scratch.Hull)
+    Convex.Static.HWMHull = TruncateBuffer(Convex.Scratch.Hull, Size, Convex.Static.HWMHull)
+    DrawPolygon(Convex.Scratch.Hull, Size, color, 0.3)
+    DrawOutline(Convex.Scratch.Hull, Size, color, 0.7, 0.7)
+end
+
+local function ColorHandle(inst, ETable, PTable, color)
+    local success = false
+    if table.find(ETable, inst.Name) or inst:FindFirstChild("HumanoidRootPart") then
+        if ETable == ExactKillerESP and inst.Name == "007n7" then return false end
+        if ETable == ExactKillerESP and inst.Name == "BuildermanDispenser" then return false end
         if inst:IsA("BasePart") then
-            local PointCount = 0
-            PointCount = ProjectPartCorners(inst, PointCount)
-            Convex.Static.HWMPoints = TruncateBuffer(Convex.Scratch.Points, PointCount, Convex.Static.HWMPoints)
-            local Size = CalculateConvexHull(Convex.Scratch.Points, PointCount, Convex.Scratch.Hull)
-            Convex.Static.HWMHull = TruncateBuffer(Convex.Scratch.Hull, Size, Convex.Static.HWMHull)
-            DrawPolygon(Convex.Scratch.Hull, Size, color, 0.3)
-            DrawOutline(Convex.Scratch.Hull, Size, color, 1, 1)
+            Highlight(inst, color)
         else
             for _, Part in ipairs(inst:GetChildren()) do
-                if Part:IsA("BasePart") and Part.Name ~= "CollisionHitbox" and Part.Name ~= "QueryHitbox" and Part.Name ~= "HaxxedBlade" and Part.Name ~= "HumanoidRootPart" and Part.Name ~= "CollisionGuard" and Part.Name ~= "TheThing" and Part.Name ~= "ExpressionHolder" and Part.Name ~= "NoclipDetector" then
-                    if inst.Name == "BuildermanSentry" and Part.Name == "Root" then continue end
-                    local PointCount = 0
-                    PointCount = ProjectPartCorners(Part, PointCount)
-                    Convex.Static.HWMPoints = TruncateBuffer(Convex.Scratch.Points, PointCount, Convex.Static.HWMPoints)
-                    local Size = CalculateConvexHull(Convex.Scratch.Points, PointCount, Convex.Scratch.Hull)
-                    Convex.Static.HWMHull = TruncateBuffer(Convex.Scratch.Hull, Size, Convex.Static.HWMHull)
-                    DrawPolygon(Convex.Scratch.Hull, Size, color, 0.3)
-                    DrawOutline(Convex.Scratch.Hull, Size, color, 1, 1)
+                if Part:IsA("BasePart") then
+                    if table.find(ExactSkipESP, Part.Name) then continue end
+                    for _, val in ipairs(PartialSkipESP) do
+                        if string.find(Part.Name, val) then continue end
+                    end
+                    Highlight(Part, color)
+                    success = true
                 end
             end
+        end
+    end
+    for _, val in ipairs(PTable) do
+        if string.find(inst.Name, val) then
+            if inst:IsA("BasePart") then
+                Highlight(inst, color)
+            else
+                for _, Part in ipairs(inst:GetChildren()) do
+                    if Part:IsA("BasePart") then
+                        if table.find(ExactSkipESP, Part.Name) then continue end
+                        for _, val in ipairs(PartialSkipESP) do
+                            if string.find(Part.Name, val) then continue end
+                        end
+                        Highlight(Part, color)
+                        success = true
+                    end
+                end
+            end
+        end
+    end
+    return success
+end
+
+local function Render()
+    for _, inst in ipairs(Ingame:GetChildren()) do
+        if table.find(ExactSkipESP, inst.Name) then continue end
+        for _, val in ipairs(PartialSkipESP) do
+            if string.find(inst.Name, val) then continue end
+        end
+        if ColorHandle(inst, ExactKillerESP, PartialKillerESP, KillerColor) then continue end
+        if ColorHandle(inst, ExactSurvivorESP, PartialSurvivorESP, SurvivorColor) then continue end
+    end
+    
+    for _, inst in ipairs(workspace:GetChildren()) do
+        if inst.Name == "BloxyCola" then
+            Highlight(inst.ItemRoot, BloxyColaColor)
+        elseif inst.Name == "Medkit" then
+            Highlight(inst.ItemRoot, MedkitColor)
+        end
+    end
+
+    for _, inst in ipairs(Killers:GetChildren()) do
+        if inst.Name == "Noli" and inst:GetAttribute("Username") then
+            if not Players:FindFirstChild(inst:GetAttribute("Username")) then continue end
+            if Players[inst:GetAttribute("Username")].Character ~= inst then
+                ColorHandle(inst, ExactKillerESP, PartialKillerESP, KillerColor)
+            end
+        end
+    end
+
+    if not Ingame:FindFirstChild("Map") then return end
+
+    for _, inst in ipairs(Ingame.Map:GetChildren()) do
+        if inst.Name == "Generator" then
+            if not inst:FindFirstChild("Main") then continue end
+            if LocalPlayer:FindFirstChild("PlayerGui") then
+                if LocalPlayer.PlayerGui:FindFirstChild("PuzzleUI") then continue end
+            end
+            if inst.Progress.Value == 100 then continue end
+            Highlight(inst.Main, GeneratorColor)
+        elseif inst.Name == "BloxyCola" then
+            Highlight(inst.ItemRoot, BloxyColaColor)
+        elseif inst.Name == "Medkit" then
+            Highlight(inst.ItemRoot, MedkitColor)
         end
     end
 end
