@@ -1,6 +1,8 @@
 --!strict
 --!optimize 2
 
+if game.GameId == 6331902150 then
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
@@ -247,3 +249,7 @@ local function Render()
 end
 
 RunService.Render:Connect(Render)
+
+print("Loaded")
+
+end
